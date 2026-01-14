@@ -1,0 +1,126 @@
+/* style.css */
+
+:root{
+  --ink:#000;
+  --bg:#fff;
+  --grid:#cccccc;
+  --tab:#f3f3f3;
+  --tabActive:#000;
+  --tabActiveText:#fff;
+  --radius:12px;
+}
+
+body{
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+h1, h2{ text-align:center; color:var(--ink); }
+
+/* Tabs */
+.tabs-wrap{ max-width:1100px; margin:0 auto 16px auto; }
+.tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:14px;
+}
+.tab{
+  appearance:none;
+  border:1px solid var(--ink);
+  background:var(--tab);
+  color:var(--ink);
+  padding:10px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  user-select:none;
+}
+.tab[aria-selected="true"]{
+  background:var(--tabActive);
+  color:var(--tabActiveText);
+}
+
+/* Action bar */
+.actionbar{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin:8px 0 18px 0;
+}
+#pdfButton, #printButton{
+  padding:12px 20px;
+  background:#000;
+  color:#fff;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+#pdfScope{
+  border:1px solid var(--ink);
+  border-radius:10px;
+  padding:10px 12px;
+  background:#fff;
+  font-size:14px;
+}
+
+/* Subjects/Questions */
+.subject{ max-width:1100px; margin:0 auto; }
+.section{
+  background:#fff;
+  padding:20px;
+  margin:24px 0;
+  border-radius:var(--radius);
+  border:1px solid var(--ink);
+  box-shadow:none;
+}
+.question{
+  background:#fff;
+  padding:14px;
+  border-radius:10px;
+  margin-bottom:18px;
+  border-right:5px solid var(--ink);
+}
+.coordinates{ font-weight:700; display:block; margin-bottom:8px; color:var(--ink); }
+.sub-question{ margin-top:8px; color:var(--ink); }
+
+canvas{
+  display:block;
+  margin:12px auto;
+  width:560px;
+  height:420px;
+  background:#fff;
+  border:1px solid var(--ink);
+  border-radius:10px;
+}
+@media (max-width:640px){
+  canvas{ width:320px; height:240px; }
+}
+
+/* הדפסה ל-PDF “חד” (וקטורי) */
+@media print{
+  @page{ size:A4; margin:10mm; }
+
+  body{ margin:0 !important; }
+
+  /* מסתיר UI שלא צריך ב-PDF */
+  .tabs-wrap, .actionbar, .tabs{ display:none !important; }
+
+  /* מציג רק את התוכן */
+  #contentRoot{ max-width:1100px; margin:0 auto; }
+
+  /* מונע חיתוך באמצע שאלה */
+  .question, .section{ break-inside: avoid; page-break-inside: avoid; }
+
+  canvas{
+    border:1px solid #000;
+  }
+}
