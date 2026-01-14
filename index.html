@@ -140,10 +140,10 @@
   <h1>דפי עבודה במתמטיקה</h1>
 
   <div class="tabs" role="tablist" aria-label="נושאים במתמטיקה">
-    <button class="tab" role="tab" id="tab-par" aria-controls="panel-par" aria-selected="true"  data-target="par">מקביליות</button>
-    <button class="tab" role="tab" id="tab-tri" aria-controls="panel-tri" aria-selected="false" data-target="tri">משולשים</button>
-    <button class="tab" role="tab" id="tab-fun" aria-controls="panel-fun" aria-selected="false" data-target="fun">פונקציות</button>
-    <button class="tab" role="tab" id="tab-lin" aria-controls="panel-lin" aria-selected="false" data-target="lin">ישרים במישור</button>
+    <button class="tab" role="tab" id="tab-par"  aria-controls="panel-par"  aria-selected="true"  data-target="par">מקביליות</button>
+    <button class="tab" role="tab" id="tab-tri"  aria-controls="panel-tri"  aria-selected="false" data-target="tri">משולשים</button>
+    <button class="tab" role="tab" id="tab-fun"  aria-controls="panel-fun"  aria-selected="false" data-target="fun">פונקציות</button>
+    <button class="tab" role="tab" id="tab-lin"  aria-controls="panel-lin"  aria-selected="false" data-target="lin">ישרים במישור</button>
     <button class="tab" role="tab" id="tab-prob" aria-controls="panel-prob" aria-selected="false" data-target="prob">הסתברות</button>
   </div>
 
@@ -163,31 +163,29 @@
 <!-- כאן נטען תוכן הנושא -->
 <div id="contentRoot"></div>
 
-<!-- ===================== SUBJECT FILES MANIFEST ===================== -->
 <script>
-  // תוכל להוסיף כאן קבצים נוספים בהמשך בלי לגעת ב-PDF/עיצוב
+  // תוסיף בהמשך קבצי נושאים נוספים לתיקייה subjects/
+  // חייבים לפחות: subjects/parallelograms.html
   const SUBJECTS = {
-    par: { file: "subjects/parallelograms.html", init: "initParallelograms" },
-    tri: { file: "subjects/triangles.html",      init: null },
-    fun: { file: "subjects/functions.html",      init: null },
-    lin: { file: "subjects/lines.html",          init: null },
-    prob:{ file: "subjects/probability.html",    init: null }
+    par:  { file: "subjects/parallelograms.html", init: "initParallelograms" },
+    tri:  { file: "subjects/triangles.html",      init: null },
+    fun:  { file: "subjects/functions.html",      init: null },
+    lin:  { file: "subjects/lines.html",          init: null },
+    prob: { file: "subjects/probability.html",    init: null }
   };
 </script>
 
-<!-- ===================== TABS LOGIC (WITH DYNAMIC LOADING) ===================== -->
+<!-- ===================== TABS LOGIC (DYNAMIC LOADING) ===================== -->
 <script>
 (function(){
   const tabs = Array.from(document.querySelectorAll(".tab"));
   const root = document.getElementById("contentRoot");
-  let activeKey = "par";
 
   function setTabUI(subjectKey){
     tabs.forEach(t=>{
       const on = t.dataset.target === subjectKey;
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
-    activeKey = subjectKey;
   }
 
   async function loadSubject(subjectKey){
@@ -199,7 +197,6 @@
       return;
     }
 
-    // אם אין קובץ בפועל, נציג הודעה קצרה
     let html = "";
     try{
       const res = await fetch(meta.file, { cache: "no-store" });
@@ -218,12 +215,10 @@
 
     root.innerHTML = html;
 
-    // MathJax אחרי טעינה
     if (window.MathJax && window.MathJax.typesetPromise) {
       try { await window.MathJax.typesetPromise(); } catch {}
     }
 
-    // ציור (אם הוגדר init)
     if(meta.init && typeof window[meta.init] === "function"){
       try{ window[meta.init](); }catch{}
     }
@@ -241,27 +236,26 @@
     });
   });
 
-  // טעינת ברירת מחדל: מקביליות
   window.addEventListener("load", ()=> loadSubject("par"));
 })();
 </script>
 
-<!-- ===================== PDF EXPORTER (CURRENT OR ALL) ===================== -->
+<!-- ===================== PDF EXPORTER (SHARPER TEXT) ===================== -->
 <script>
 async function downloadPDF() {
   const { jsPDF } = window.jspdf;
+
   const scope = document.getElementById("pdfScopeSelect").value;
 
+  // "current": משתמש במה שנטען כרגע; "all": טוען את כל קבצי ה-subjects ל-DOM זמני
   let subjectsHTML = [];
 
   if(scope === "current"){
-    // משתמש במה שכבר נטען במסך
     const currentSubject = document.querySelector("#contentRoot .subject");
     if(currentSubject){
       subjectsHTML = [currentSubject.outerHTML];
     }
   } else {
-    // טוען את כל קבצי הנושאים (כדי לשמור "כל הנושאים" עובד גם עם מודולריות)
     const keys = Object.keys(SUBJECTS);
     for(const k of keys){
       const meta = SUBJECTS[k];
@@ -281,7 +275,7 @@ async function downloadPDF() {
     return;
   }
 
-  // בונה DOM זמני מכל הנושאים שנבחרו, ומלקט שאלות כמו בקוד שלך
+  // DOM זמני לליקוט שאלות
   const staging = document.createElement("div");
   staging.style.position = "fixed";
   staging.style.left = "-2000px";
@@ -289,7 +283,6 @@ async function downloadPDF() {
   staging.style.width = "1200px";
   staging.style.direction = "rtl";
   document.body.appendChild(staging);
-
   staging.innerHTML = subjectsHTML.join("\n");
 
   const subjectsToExport = Array.from(staging.querySelectorAll(".subject"));
@@ -301,7 +294,7 @@ async function downloadPDF() {
     return;
   }
 
-  // קבוצות של 2 שאלות לעמוד (בדיוק כמו אצלך)
+  // קבוצות של 2 שאלות לעמוד (כמו אצלך)
   const groups = [];
   for (let i=0; i < questions.length; i += 2) {
     const pair = [questions[i]];
@@ -312,11 +305,12 @@ async function downloadPDF() {
   const pdf = new jsPDF("p", "mm", "a4");
   const pdfW = 210;
   const pdfH = 297;
+  const margin = 8;
 
-  // כדי שציורים (canvas) ייכנסו ל-PDF, אנחנו משתמשים בקנבסים האמיתיים מהמסך
-  // רק לנושא הנוכחי יש קנבסים מצוירים ברגע נתון; לכן "כל הנושאים" יוציא PDF עם תוכן,
-  // אבל קנבסים של נושאים שלא נטענו/צוירו בפועל יהיו ריקים עד שתוסיף להם init כמו למקביליות.
-  // (זה אותו עיקרון שהיה לך קודם, רק עכשיו זה מודולרי.)
+  // חדות: scale גבוה
+  const CAPTURE_SCALE = Math.max(3, Math.ceil((window.devicePixelRatio || 1) * 2));
+
+  // מפה של קנבסים "חיים" מהמסך (כדי להחליף ל-img ב-PDF)
   const liveCanvases = new Map();
   document.querySelectorAll("#contentRoot canvas[id]").forEach(c => liveCanvases.set(c.id, c));
 
@@ -330,6 +324,9 @@ async function downloadPDF() {
     temp.style.position = "fixed";
     temp.style.left = "-2000px";
     temp.style.top = "0";
+    temp.style.webkitFontSmoothing = "antialiased";
+    temp.style.mozOsxFontSmoothing = "grayscale";
+    temp.style.textRendering = "geometricPrecision";
     document.body.appendChild(temp);
 
     for (const el of groups[g]) {
@@ -353,35 +350,41 @@ async function downloadPDF() {
       temp.appendChild(clone);
     }
 
-    // Ensure MathJax rendered inside temp before snapshot
+    // MathJax בתוך temp לפני צילום
     if (window.MathJax && window.MathJax.typesetPromise) {
       try { await window.MathJax.typesetPromise([temp]); } catch {}
     }
 
     const canvas = await html2canvas(temp, {
-      scale: 2,
+      scale: CAPTURE_SCALE,
       useCORS: true,
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
+      removeContainer: true
     });
 
     document.body.removeChild(temp);
 
-    const imgW = pdfW;
-    const imgH = (canvas.height * pdfW) / canvas.width;
+    const targetW = pdfW - margin*2;
+    const targetH = pdfH - margin*2;
+
+    const imgW = targetW;
+    const imgH = (canvas.height * imgW) / canvas.width;
 
     let finalW = imgW;
     let finalH = imgH;
 
-    if (finalH > pdfH - 10) {
-      const scale = (pdfH - 10) / finalH;
-      finalW *= scale;
-      finalH *= scale;
+    if (finalH > targetH) {
+      const s = targetH / finalH;
+      finalW *= s;
+      finalH *= s;
     }
 
     if (g > 0) pdf.addPage();
 
-    const yOffset = (pdfH - finalH) / 2;
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, yOffset, finalW, finalH);
+    const x = margin + (targetW - finalW) / 2;
+    const y = margin + (targetH - finalH) / 2;
+
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, finalW, finalH);
   }
 
   document.body.removeChild(staging);
@@ -389,10 +392,26 @@ async function downloadPDF() {
 }
 </script>
 
-<!-- ===================== DRAWING CODE (UNCHANGED VALUES) ===================== -->
+<!-- ===================== DRAWING CODE + INIT (UNCHANGED VALUES) ===================== -->
 <script>
-function lineBounds(points){const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);return{minX:Math.min(...xs)-2,maxX:Math.max(...xs)+2,minY:Math.min(...ys)-2,maxY:Math.max(...ys)+2};}
-function labelPlugin(labels){return{id:'pointLabels',afterDraw(chart){const ctx=chart.ctx;ctx.save();ctx.font='bold 12px Arial';ctx.fillStyle='#000';labels.forEach(pt=>{const xp=chart.scales.x.getPixelForValue(pt.x),yp=chart.scales.y.getPixelForValue(pt.y);const off=8*(pt.side==='rtl'?-1:1);ctx.fillText(pt.label,xp+off,yp-8);});ctx.restore();}};}
+function lineBounds(points){
+  const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+  return{minX:Math.min(...xs)-2,maxX:Math.max(...xs)+2,minY:Math.min(...ys)-2,maxY:Math.max(...ys)+2};
+}
+function labelPlugin(labels){
+  return{id:'pointLabels',afterDraw(chart){
+    const ctx=chart.ctx;
+    ctx.save();
+    ctx.font='bold 12px Arial';
+    ctx.fillStyle='#000';
+    labels.forEach(pt=>{
+      const xp=chart.scales.x.getPixelForValue(pt.x),yp=chart.scales.y.getPixelForValue(pt.y);
+      const off=8*(pt.side==='rtl'?-1:1);
+      ctx.fillText(pt.label,xp+off,yp-8);
+    });
+    ctx.restore();
+  }};
+}
 
 function drawPlane(canvasId, vertices, extraLines=[]) {
   const coords = vertices.map(v => [v.x, v.y]);
@@ -415,7 +434,14 @@ function drawPlane(canvasId, vertices, extraLines=[]) {
   ];
 
   extraLines.forEach(line => {
-    datasets.push({data: line.points, showLine:true, borderColor:'#000', pointRadius:0, borderWidth:1, borderDash: line.dashed ? [5,5] : []});
+    datasets.push({
+      data: line.points,
+      showLine:true,
+      borderColor:'#000',
+      pointRadius:0,
+      borderWidth:1,
+      borderDash: line.dashed ? [5,5] : []
+    });
   });
 
   const chart = new Chart(ctx,{
@@ -436,7 +462,6 @@ function drawPlane(canvasId, vertices, extraLines=[]) {
   ctx.chartInstance = chart;
 }
 
-/* INIT FOR PARALLELOGRAMS (VALUES UNCHANGED) */
 function initParallelograms(){
   const Q1_A={x:-5,y:2,label:'A'},Q1_B={x:-3,y:6,label:'B'},Q1_D={x:1,y:2,label:'D'};
   const Q1_C={x:Q1_B.x+(Q1_D.x-Q1_A.x),y:Q1_B.y+(Q1_D.y-Q1_A.y),label:'C'};
@@ -444,7 +469,6 @@ function initParallelograms(){
   const Q2_A={x:1,y:3,label:'A'},Q2_B={x:-6,y:3,label:'B'},Q2_C={x:-2,y:0,label:'C'};
   const Q2_D={x:Q2_C.x+(Q2_A.x-Q2_B.x),y:Q2_C.y+(Q2_A.y-Q2_B.y),label:'D'};
 
-  // Calculate foot H from A to CD
   const slopeCD = (Q2_D.y - Q2_C.y)/(Q2_D.x - Q2_C.x);
   const slopePerp = -1/slopeCD;
   const interceptA = Q2_A.y - slopePerp*Q2_A.x;
@@ -457,7 +481,6 @@ function initParallelograms(){
   const Q4_A={x:-2,y:3,label:'A'},Q4_B={x:-2,y:7,label:'B'},Q4_C={x:0,y:5,label:'C'},Q4_D={x:0,y:1,label:'D'};
   const Q5_A={x:-3,y:-5,label:'A'},Q5_B={x:-1,y:1,label:'B'},Q5_C={x:3,y:5,label:'C'},Q5_D={x:1,y:-1,label:'D'};
 
-  // Q6 adjusted to match uploaded image
   const Q6_A={x:0,y:4,label:'A'}, Q6_B={x:1,y:10,label:'B'}, Q6_C={x:5,y:10,label:'C'}, Q6_D={x:4,y:4,label:'D'};
 
   Q1_A.side='rtl';Q1_B.side='rtl';Q1_C.side='ltr';Q1_D.side='ltr';
