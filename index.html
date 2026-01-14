@@ -29,7 +29,6 @@
   </div>
 
   <div class="actionbar">
-    <!-- נשאר רק כפתור PDF חד -->
     <button id="printButton" onclick="printPDF()">🖨️ הורד PDF חד</button>
   </div>
 </div>
@@ -38,7 +37,6 @@
 <div id="contentRoot"></div>
 
 <script>
-  // רישום נושאים: מוסיפים כאן קבצים חדשים בתיקייה subjects/
   const SUBJECTS = {
     par:  { file: "subjects/parallelograms.html", init: "initParallelograms" },
     tri:  { file: "subjects/triangles.html",      init: null },
@@ -48,7 +46,6 @@
   };
 </script>
 
-<!-- טעינת טאבים -->
 <script>
 (function(){
   const tabs = Array.from(document.querySelectorAll(".tab"));
@@ -113,14 +110,12 @@
 })();
 </script>
 
-<!-- PDF חד: הדפסה ל-PDF (וקטורי, טקסט חד) -->
 <script>
 function printPDF(){
   window.print();
 }
 </script>
 
-<!-- ציור (כמו שהיה) -->
 <script>
 function lineBounds(points){
   const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
