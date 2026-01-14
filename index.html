@@ -11,10 +11,6 @@
   <script id="MathJax-script" async
           src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <!-- PDF libs (נשאר, אבל עדיין "צילום מסך" ולכן עלול לטשטש טקסט) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <!-- CSS חיצוני -->
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -33,19 +29,8 @@
   </div>
 
   <div class="actionbar">
-    <!-- כפתור “חד” מומלץ: PDF וקטורי דרך הדפדפן -->
-    <button id="printButton" onclick="printPDF()">🖨️ PDF חד (הדפסה)</button>
-
-    <!-- הכפתור הישן נשאר (אבל טקסט יכול לטשטש כי זה תמונה) -->
-    <button id="pdfButton" onclick="downloadPDF()">📄 הורד כ-PDF (צילום)</button>
-
-    <label id="pdfScope" for="pdfScopeSelect">
-      יצוא PDF:
-      <select id="pdfScopeSelect">
-        <option value="current" selected>הנושא הנוכחי</option>
-        <option value="all">כל הנושאים</option>
-      </select>
-    </label>
+    <!-- נשאר רק כפתור PDF חד -->
+    <button id="printButton" onclick="printPDF()">🖨️ הורד PDF חד</button>
   </div>
 </div>
 
@@ -131,153 +116,7 @@
 <!-- PDF חד: הדפסה ל-PDF (וקטורי, טקסט חד) -->
 <script>
 function printPDF(){
-  // הדפדפן ישמור ל-PDF דרך Print dialog
   window.print();
-}
-</script>
-
-<!-- PDF צילום: נשאר (אבל טקסט עלול להישאר מטושטש) -->
-<script>
-async function downloadPDF() {
-  const { jsPDF } = window.jspdf;
-
-  const scope = document.getElementById("pdfScopeSelect").value;
-
-  let subjectsHTML = [];
-
-  if(scope === "current"){
-    const currentSubject = document.querySelector("#contentRoot .subject");
-    if(currentSubject){
-      subjectsHTML = [currentSubject.outerHTML];
-    }
-  } else {
-    const keys = Object.keys(SUBJECTS);
-    for(const k of keys){
-      const meta = SUBJECTS[k];
-      if(!meta || !meta.file) continue;
-      try{
-        const res = await fetch(meta.file, { cache: "no-store" });
-        if(res.ok){
-          const html = await res.text();
-          subjectsHTML.push(html);
-        }
-      }catch{}
-    }
-  }
-
-  if(subjectsHTML.length === 0){
-    alert("אין שאלות לייצוא ב-PDF בטווח שנבחר.");
-    return;
-  }
-
-  const staging = document.createElement("div");
-  staging.style.position = "fixed";
-  staging.style.left = "-2000px";
-  staging.style.top = "0";
-  staging.style.width = "1200px";
-  staging.style.direction = "rtl";
-  document.body.appendChild(staging);
-  staging.innerHTML = subjectsHTML.join("\n");
-
-  const subjectsToExport = Array.from(staging.querySelectorAll(".subject"));
-  const questions = subjectsToExport.flatMap(s => Array.from(s.querySelectorAll(".question")));
-
-  if(questions.length === 0){
-    document.body.removeChild(staging);
-    alert("אין שאלות לייצוא ב-PDF בטווח שנבחר.");
-    return;
-  }
-
-  const groups = [];
-  for (let i=0; i < questions.length; i += 2) {
-    const pair = [questions[i]];
-    if (questions[i+1]) pair.push(questions[i+1]);
-    groups.push(pair);
-  }
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pdfW = 210;
-  const pdfH = 297;
-  const margin = 8;
-
-  const CAPTURE_SCALE = Math.max(4, Math.ceil((window.devicePixelRatio || 1) * 3));
-
-  const liveCanvases = new Map();
-  document.querySelectorAll("#contentRoot canvas[id]").forEach(c => liveCanvases.set(c.id, c));
-
-  for (let g = 0; g < groups.length; g++) {
-    const temp = document.createElement("div");
-    temp.style.direction = "rtl";
-    temp.style.width = "900px";
-    temp.style.padding = "40px";
-    temp.style.background = "#ffffff";
-    temp.style.boxSizing = "border-box";
-    temp.style.position = "fixed";
-    temp.style.left = "-2000px";
-    temp.style.top = "0";
-    temp.style.webkitFontSmoothing = "antialiased";
-    temp.style.mozOsxFontSmoothing = "grayscale";
-    temp.style.textRendering = "geometricPrecision";
-    document.body.appendChild(temp);
-
-    for (const el of groups[g]) {
-      const clone = el.cloneNode(true);
-
-      const c = clone.querySelector("canvas");
-      if (c && c.id && liveCanvases.has(c.id)) {
-        const origCanvas = liveCanvases.get(c.id);
-        try {
-          const imgURL = origCanvas.toDataURL("image/png");
-          const img = document.createElement("img");
-          img.src = imgURL;
-          img.style.width = "560px";
-          img.style.height = "420px";
-          c.replaceWith(img);
-        } catch {}
-      }
-
-      clone.style.marginBottom = "40px";
-      temp.appendChild(clone);
-    }
-
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      try { await window.MathJax.typesetPromise([temp]); } catch {}
-    }
-
-    const canvas = await html2canvas(temp, {
-      scale: CAPTURE_SCALE,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      removeContainer: true
-    });
-
-    document.body.removeChild(temp);
-
-    const targetW = pdfW - margin*2;
-    const targetH = pdfH - margin*2;
-
-    const imgW = targetW;
-    const imgH = (canvas.height * imgW) / canvas.width;
-
-    let finalW = imgW;
-    let finalH = imgH;
-
-    if (finalH > targetH) {
-      const s = targetH / finalH;
-      finalW *= s;
-      finalH *= s;
-    }
-
-    if (g > 0) pdf.addPage();
-
-    const x = margin + (targetW - finalW) / 2;
-    const y = margin + (targetH - finalH) / 2;
-
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, finalW, finalH);
-  }
-
-  document.body.removeChild(staging);
-  pdf.save("worksheet.pdf");
 }
 </script>
 
