@@ -1,137 +1,22 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>math worksheet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>math worksheet</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- libs (כמו שהיה) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-<!-- PDF LIBRARIES -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- PDF libs (נשאר, אבל עדיין "צילום מסך" ולכן עלול לטשטש טקסט) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<style>
-  :root{
-    --ink:#000;
-    --bg:#fff;
-    --grid:#cccccc;
-    --tab:#f3f3f3;
-    --tabActive:#000;
-    --tabActiveText:#fff;
-    --radius:12px;
-  }
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background: var(--bg);
-    color: var(--ink);
-    line-height: 1.6;
-  }
-  h1, h2 { text-align: center; color: var(--ink); }
-
-  /* Tabs */
-  .tabs-wrap{
-    max-width: 1100px;
-    margin: 0 auto 16px auto;
-  }
-  .tabs{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-    align-items:center;
-    margin-bottom: 14px;
-  }
-  .tab{
-    appearance:none;
-    border:1px solid var(--ink);
-    background: var(--tab);
-    color: var(--ink);
-    padding: 10px 14px;
-    border-radius: 999px;
-    cursor:pointer;
-    font-size: 14px;
-    line-height: 1;
-    user-select:none;
-  }
-  .tab[aria-selected="true"]{
-    background: var(--tabActive);
-    color: var(--tabActiveText);
-  }
-
-  /* Action bar */
-  .actionbar{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin: 8px 0 18px 0;
-  }
-  #pdfButton {
-    padding: 12px 20px;
-    background: #000000;
-    color: #ffffff;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  #pdfScope{
-    border:1px solid var(--ink);
-    border-radius: 10px;
-    padding: 10px 12px;
-    background:#fff;
-    font-size: 14px;
-  }
-
-  /* Content sections */
-  .subject{
-    display:none;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .subject.active{
-    display:block;
-  }
-
-  .section {
-    background: #ffffff;
-    padding: 20px;
-    margin: 24px 0;
-    border-radius: var(--radius);
-    border: 1px solid var(--ink);
-    box-shadow: none;
-  }
-
-  .question {
-    background: #ffffff;
-    padding: 14px;
-    border-radius: 10px;
-    margin-bottom: 18px;
-    border-right: 5px solid var(--ink);
-  }
-
-  .coordinates { font-weight: 700; display: block; margin-bottom: 8px; color: var(--ink); }
-  .sub-question { margin-top: 8px; color: var(--ink); }
-
-  canvas {
-    display: block;
-    margin: 12px auto;
-    width: 560px;
-    height: 420px;
-    background: #ffffff;
-    border: 1px solid var(--ink);
-    border-radius: 10px;
-  }
-
-  @media (max-width: 640px){
-    canvas { width: 320px; height: 240px; }
-  }
-</style>
+  <!-- CSS חיצוני -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -148,7 +33,11 @@
   </div>
 
   <div class="actionbar">
-    <button id="pdfButton" onclick="downloadPDF()">📄 הורד כ-PDF</button>
+    <!-- כפתור “חד” מומלץ: PDF וקטורי דרך הדפדפן -->
+    <button id="printButton" onclick="printPDF()">🖨️ PDF חד (הדפסה)</button>
+
+    <!-- הכפתור הישן נשאר (אבל טקסט יכול לטשטש כי זה תמונה) -->
+    <button id="pdfButton" onclick="downloadPDF()">📄 הורד כ-PDF (צילום)</button>
 
     <label id="pdfScope" for="pdfScopeSelect">
       יצוא PDF:
@@ -164,8 +53,7 @@
 <div id="contentRoot"></div>
 
 <script>
-  // תוסיף בהמשך קבצי נושאים נוספים לתיקייה subjects/
-  // חייבים לפחות: subjects/parallelograms.html
+  // רישום נושאים: מוסיפים כאן קבצים חדשים בתיקייה subjects/
   const SUBJECTS = {
     par:  { file: "subjects/parallelograms.html", init: "initParallelograms" },
     tri:  { file: "subjects/triangles.html",      init: null },
@@ -175,7 +63,7 @@
   };
 </script>
 
-<!-- ===================== TABS LOGIC (DYNAMIC LOADING) ===================== -->
+<!-- טעינת טאבים -->
 <script>
 (function(){
   const tabs = Array.from(document.querySelectorAll(".tab"));
@@ -240,14 +128,21 @@
 })();
 </script>
 
-<!-- ===================== PDF EXPORTER (SHARPER TEXT) ===================== -->
+<!-- PDF חד: הדפסה ל-PDF (וקטורי, טקסט חד) -->
+<script>
+function printPDF(){
+  // הדפדפן ישמור ל-PDF דרך Print dialog
+  window.print();
+}
+</script>
+
+<!-- PDF צילום: נשאר (אבל טקסט עלול להישאר מטושטש) -->
 <script>
 async function downloadPDF() {
   const { jsPDF } = window.jspdf;
 
   const scope = document.getElementById("pdfScopeSelect").value;
 
-  // "current": משתמש במה שנטען כרגע; "all": טוען את כל קבצי ה-subjects ל-DOM זמני
   let subjectsHTML = [];
 
   if(scope === "current"){
@@ -275,7 +170,6 @@ async function downloadPDF() {
     return;
   }
 
-  // DOM זמני לליקוט שאלות
   const staging = document.createElement("div");
   staging.style.position = "fixed";
   staging.style.left = "-2000px";
@@ -294,7 +188,6 @@ async function downloadPDF() {
     return;
   }
 
-  // קבוצות של 2 שאלות לעמוד (כמו אצלך)
   const groups = [];
   for (let i=0; i < questions.length; i += 2) {
     const pair = [questions[i]];
@@ -307,10 +200,8 @@ async function downloadPDF() {
   const pdfH = 297;
   const margin = 8;
 
-  // חדות: scale גבוה
-  const CAPTURE_SCALE = Math.max(3, Math.ceil((window.devicePixelRatio || 1) * 2));
+  const CAPTURE_SCALE = Math.max(4, Math.ceil((window.devicePixelRatio || 1) * 3));
 
-  // מפה של קנבסים "חיים" מהמסך (כדי להחליף ל-img ב-PDF)
   const liveCanvases = new Map();
   document.querySelectorAll("#contentRoot canvas[id]").forEach(c => liveCanvases.set(c.id, c));
 
@@ -332,7 +223,6 @@ async function downloadPDF() {
     for (const el of groups[g]) {
       const clone = el.cloneNode(true);
 
-      // Replace canvas with img snapshot (so it prints)
       const c = clone.querySelector("canvas");
       if (c && c.id && liveCanvases.has(c.id)) {
         const origCanvas = liveCanvases.get(c.id);
@@ -350,7 +240,6 @@ async function downloadPDF() {
       temp.appendChild(clone);
     }
 
-    // MathJax בתוך temp לפני צילום
     if (window.MathJax && window.MathJax.typesetPromise) {
       try { await window.MathJax.typesetPromise([temp]); } catch {}
     }
@@ -392,7 +281,7 @@ async function downloadPDF() {
 }
 </script>
 
-<!-- ===================== DRAWING CODE + INIT (UNCHANGED VALUES) ===================== -->
+<!-- ציור (כמו שהיה) -->
 <script>
 function lineBounds(points){
   const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
@@ -480,7 +369,6 @@ function initParallelograms(){
   const Q3_A={x:0,y:0,label:'A'},Q3_B={x:4,y:0,label:'B'},Q3_D={x:3,y:3,label:'D'},Q3_C={x:7,y:3,label:'C'};
   const Q4_A={x:-2,y:3,label:'A'},Q4_B={x:-2,y:7,label:'B'},Q4_C={x:0,y:5,label:'C'},Q4_D={x:0,y:1,label:'D'};
   const Q5_A={x:-3,y:-5,label:'A'},Q5_B={x:-1,y:1,label:'B'},Q5_C={x:3,y:5,label:'C'},Q5_D={x:1,y:-1,label:'D'};
-
   const Q6_A={x:0,y:4,label:'A'}, Q6_B={x:1,y:10,label:'B'}, Q6_C={x:5,y:10,label:'C'}, Q6_D={x:4,y:4,label:'D'};
 
   Q1_A.side='rtl';Q1_B.side='rtl';Q1_C.side='ltr';Q1_D.side='ltr';
