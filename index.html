@@ -22,6 +22,7 @@
 
   <div class="tabs" role="tablist" aria-label="נושאים במתמטיקה">
     <button class="tab" role="tab" id="tab-par"  aria-controls="panel-par"  aria-selected="true"  data-target="par">מקביליות</button>
+    <button class="tab" role="tab" id="tab-eq"   aria-controls="panel-eq"   aria-selected="false" data-target="eq">משוואות</button>
     <button class="tab" role="tab" id="tab-tri"  aria-controls="panel-tri"  aria-selected="false" data-target="tri">משולשים</button>
     <button class="tab" role="tab" id="tab-fun"  aria-controls="panel-fun"  aria-selected="false" data-target="fun">פונקציות</button>
     <button class="tab" role="tab" id="tab-lin"  aria-controls="panel-lin"  aria-selected="false" data-target="lin">ישרים במישור</button>
@@ -37,8 +38,10 @@
 <div id="contentRoot"></div>
 
 <script>
+  // הוספנו eq שמצביע לקובץ החדש subjects/equations.html
   const SUBJECTS = {
     par:  { file: "subjects/parallelograms.html", init: "initParallelograms" },
+    eq:   { file: "subjects/equations.html",      init: null },
     tri:  { file: "subjects/triangles.html",      init: null },
     fun:  { file: "subjects/functions.html",      init: null },
     lin:  { file: "subjects/lines.html",          init: null },
@@ -78,6 +81,7 @@
           <h1>דף עבודה</h1>
           <div class="section">
             <h2>הקובץ עדיין לא קיים בנתיב: ${meta.file}</h2>
+            <div class="note">צור/י את הקובץ בתיקייה subjects והעלה/י ל-GitHub.</div>
           </div>
         </section>
       `;
@@ -106,6 +110,7 @@
     });
   });
 
+  // ברירת מחדל: מקביליות
   window.addEventListener("load", ()=> loadSubject("par"));
 })();
 </script>
@@ -116,6 +121,7 @@ function printPDF(){
 }
 </script>
 
+<!-- ציור (כמו שהיה) -->
 <script>
 function lineBounds(points){
   const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
